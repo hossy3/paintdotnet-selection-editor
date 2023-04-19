@@ -17,6 +17,7 @@ import {
   SelectObject24Regular,
   ShapeUnion24Regular,
 } from "@fluentui/react-icons";
+import { convertToRectangleSelection, isValidSelection } from "./logics";
 
 const useStyles = makeStyles({
   base: {
@@ -33,6 +34,11 @@ const App = () => {
   const styles = useStyles();
 
   const [selectionText, setSelectionText] = React.useState("");
+  const [validSelection, setValidSelection] = React.useState(false);
+
+  React.useEffect(() => {
+    setValidSelection(isValidSelection(selectionText));
+  }, [selectionText]);
 
   return (
     <div className={styles.base}>
@@ -40,7 +46,7 @@ const App = () => {
         <Tooltip content="Copy" relationship="description" withArrow>
           <ToolbarButton
             aria-label="Copy"
-            disabled={selectionText === ""}
+            disabled={!validSelection}
             onClick={() => {
               navigator.clipboard.writeText(selectionText);
             }}
@@ -62,7 +68,14 @@ const App = () => {
         <Tooltip content="Rectangle" relationship="description" withArrow>
           <ToolbarButton
             aria-label="Rectangle"
+            disabled={!validSelection}
             icon={<SelectObject24Regular />}
+            onClick={() => {
+              const sel = convertToRectangleSelection(selectionText);
+              if (sel != null) {
+                setSelectionText(sel);
+              }
+            }}
           />
         </Tooltip>
         <Tooltip content="Expand" relationship="description" withArrow>
