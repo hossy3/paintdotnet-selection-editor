@@ -28,7 +28,8 @@ export const isValidSelection = (selectionText: string): boolean => {
 };
 
 export const convertToRectangleSelection = (
-  selectionText: string
+  selectionText: string,
+  offset: number | undefined = undefined
 ): string | undefined => {
   if (!isValidSelection(selectionText)) {
     return undefined;
@@ -60,6 +61,13 @@ export const convertToRectangleSelection = (
         y_max = y;
       }
     }
+  }
+
+  if (offset != null) {
+    x_min = x_min! - offset;
+    x_max = x_max! + offset;
+    y_min = y_min! - offset;
+    y_max = y_max! + offset;
   }
 
   const list = [x_max, y_min, x_min, y_min, x_min, y_max, x_max, y_max];

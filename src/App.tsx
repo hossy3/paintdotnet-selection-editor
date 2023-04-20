@@ -79,20 +79,39 @@ const App = () => {
           />
         </Tooltip>
         <Tooltip content="Expand" relationship="description" withArrow>
-          <ToolbarButton aria-label="Expand" icon={<ArrowExpand24Regular />} />
+          <ToolbarButton
+            aria-label="Expand"
+            icon={<ArrowExpand24Regular />}
+            disabled={!validSelection}
+            onClick={() => {
+              const sel = convertToRectangleSelection(selectionText, 1);
+              if (sel != null) {
+                setSelectionText(sel);
+              }
+            }}
+          />
         </Tooltip>
         <Tooltip content="Form" relationship="description" withArrow>
-          <ToolbarButton aria-label="Form" icon={<Form24Regular />} />
+          <ToolbarButton
+            aria-label="Form"
+            disabled={true}
+            icon={<Form24Regular />}
+          />
         </Tooltip>
         <Tooltip content="Fill void" relationship="description" withArrow>
           <ToolbarButton
             aria-label="Fill void"
+            disabled={true}
             icon={<ShapeUnion24Regular />}
           />
         </Tooltip>
         <ToolbarDivider />
         <Tooltip content="Help" relationship="description" withArrow>
-          <ToolbarButton aria-label="Help" icon={<QuestionCircle24Regular />} />
+          <ToolbarButton
+            aria-label="Help"
+            disabled={true}
+            icon={<QuestionCircle24Regular />}
+          />
         </Tooltip>
       </Toolbar>
       <Textarea
