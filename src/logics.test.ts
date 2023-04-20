@@ -52,4 +52,14 @@ describe("convertToRectangleSelection", () => {
     const expected = { polygonList: ["15,0,5,0,5,20,15,20"] };
     expect(actualObj).toEqual(expected);
   });
+
+  it("returns rectangle with offset", () => {
+    const actual = convertToRectangleSelection(
+      '{"polygonList": ["10,0,0,0,0,20,10,20,10,0"]}', 1
+    );
+    expect(actual).not.toBeUndefined();
+    const actualObj = JSON.parse(actual!);
+    const expected = { polygonList: ["11,-1,-1,-1,-1,21,11,21"] };
+    expect(actualObj).toEqual(expected);
+  });
 });
