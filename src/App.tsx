@@ -18,6 +18,7 @@ import {
   ShapeUnion24Regular,
 } from "@fluentui/react-icons";
 import { convertToRectangleSelection, isValidSelection } from "./logics";
+import { AboutDialog } from "./AboutDialog";
 
 const useStyles = makeStyles({
   base: {
@@ -35,6 +36,7 @@ const App = () => {
 
   const [selectionText, setSelectionText] = React.useState("");
   const [validSelection, setValidSelection] = React.useState(false);
+  const [dialogOpen, setDialogOpen] = React.useState(false);
 
   React.useEffect(() => {
     setValidSelection(isValidSelection(selectionText));
@@ -109,8 +111,10 @@ const App = () => {
         <Tooltip content="Help" relationship="description" withArrow>
           <ToolbarButton
             aria-label="Help"
-            disabled={true}
             icon={<QuestionCircle24Regular />}
+            onClick={() => {
+              setDialogOpen(true);
+            }}
           />
         </Tooltip>
       </Toolbar>
@@ -123,6 +127,10 @@ const App = () => {
         resize="vertical"
         textarea={{ className: styles.textarea }}
         value={selectionText}
+      />
+      <AboutDialog
+        open={dialogOpen}
+        onOpenChange={(_, data) => setDialogOpen(data.open)}
       />
     </div>
   );
