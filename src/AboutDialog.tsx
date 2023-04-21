@@ -19,7 +19,7 @@ export const AboutDialog = (props: AboutDialogProps) => {
     <Dialog {...props}>
       <DialogSurface>
         <DialogBody>
-          <DialogTitle>Selection Editor for Paint.NET</DialogTitle>
+          <DialogTitle>Paint.NET Selection Editor</DialogTitle>
           <DialogContent>
             <div>
               <Text>
