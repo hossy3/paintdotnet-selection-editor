@@ -30,17 +30,55 @@ const useStyles = makeStyles({
   },
 });
 
+type State = {
+  selectionText: string;
+  validSelection: boolean;
+  hasVoid: boolean;
+};
+
+const initialState: State = {
+  selectionText: "",
+  validSelection: false,
+  hasVoid: false,
+};
+
+type Action =
+  | { type: "set_selection"; payload: { text: string } }
+  | { type: "convert_to_rectangle"; payload: { offset?: number } };
+
+const reducer = (state: State, action: Action): State => {
+  switch (action.type) {
+    case "set_selection": {
+      const selectionText = action.payload.text;
+      return {
+        selectionText: selectionText,
+        validSelection: isValidSelection(selectionText),
+        hasVoid: isValidSelection(selectionText),
+      };
+    }
+    case "convert_to_rectangle": {
+      const selectionText = convertToRectangleSelection(
+        state.selectionText,
+        action.payload.offset
+      );
+      if (selectionText == null) {
+        return state;
+      }
+      return {
+        selectionText: selectionText,
+        validSelection: isValidSelection(selectionText),
+        hasVoid: isValidSelection(selectionText),
+      };
+    }
+  }
+};
+
 const App = () => {
   const textareaId = useId("textarea");
   const styles = useStyles();
 
-  const [selectionText, setSelectionText] = React.useState("");
-  const [validSelection, setValidSelection] = React.useState(false);
+  const [state, dispatch] = React.useReducer(reducer, initialState);
   const [dialogOpen, setDialogOpen] = React.useState(false);
-
-  React.useEffect(() => {
-    setValidSelection(isValidSelection(selectionText));
-  }, [selectionText]);
 
   return (
     <div className={styles.base}>
@@ -48,9 +86,9 @@ const App = () => {
         <Tooltip content="Copy" relationship="description" withArrow>
           <ToolbarButton
             aria-label="Copy"
-            disabled={!validSelection}
+            disabled={!state.validSelection}
             onClick={() => {
-              navigator.clipboard.writeText(selectionText);
+              navigator.clipboard.writeText(state.selectionText);
             }}
             icon={<DocumentCopy24Regular />}
           />
@@ -60,7 +98,7 @@ const App = () => {
             aria-label="Paste"
             onClick={() => {
               navigator.clipboard.readText().then((text) => {
-                setSelectionText(text);
+                dispatch({ type: "set_selection", payload: { text } });
               });
             }}
             icon={<ClipboardPaste24Regular />}
@@ -70,13 +108,10 @@ const App = () => {
         <Tooltip content="Rectangle" relationship="description" withArrow>
           <ToolbarButton
             aria-label="Rectangle"
-            disabled={!validSelection}
+            disabled={!state.validSelection}
             icon={<SelectObject24Regular />}
             onClick={() => {
-              const sel = convertToRectangleSelection(selectionText);
-              if (sel != null) {
-                setSelectionText(sel);
-              }
+              dispatch({ type: "convert_to_rectangle", payload: {} });
             }}
           />
         </Tooltip>
@@ -84,12 +119,12 @@ const App = () => {
           <ToolbarButton
             aria-label="Expand"
             icon={<ArrowExpand24Regular />}
-            disabled={!validSelection}
+            disabled={!state.validSelection}
             onClick={() => {
-              const sel = convertToRectangleSelection(selectionText, 1);
-              if (sel != null) {
-                setSelectionText(sel);
-              }
+              dispatch({
+                type: "convert_to_rectangle",
+                payload: { offset: 1 },
+              });
             }}
           />
         </Tooltip>
@@ -121,12 +156,12 @@ const App = () => {
       <Textarea
         id={textareaId}
         onChange={(_, data) => {
-          setSelectionText(data.value);
+          dispatch({ type: "set_selection", payload: { text: data.value } });
         }}
         placeholder='Paint.NET "選択範囲自体をコピー"'
         resize="vertical"
         textarea={{ className: styles.textarea }}
-        value={selectionText}
+        value={state.selectionText}
       />
       <AboutDialog
         open={dialogOpen}
