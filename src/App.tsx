@@ -17,7 +17,13 @@ import {
   SelectObject24Regular,
   ShapeUnion24Regular,
 } from "@fluentui/react-icons";
-import { convertToRectangleSelection, isValidSelection } from "./logics";
+import {
+  hasVoid,
+  isPolygonListValid,
+  makeRectangle,
+  toPolygonList,
+  toSelection,
+} from "./logics";
 import { AboutDialog } from "./AboutDialog";
 
 const useStyles = makeStyles({
@@ -50,24 +56,26 @@ const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case "set_selection": {
       const selectionText = action.payload.text;
+      const polygonList = toPolygonList(selectionText);
       return {
         selectionText: selectionText,
-        validSelection: isValidSelection(selectionText),
-        hasVoid: isValidSelection(selectionText),
+        validSelection: isPolygonListValid(polygonList),
+        hasVoid: hasVoid(polygonList),
       };
     }
     case "convert_to_rectangle": {
-      const selectionText = convertToRectangleSelection(
-        state.selectionText,
+      const polygonList = makeRectangle(
+        toPolygonList(state.selectionText),
         action.payload.offset
       );
+      const selectionText = toSelection(polygonList);
       if (selectionText == null) {
         return state;
       }
       return {
         selectionText: selectionText,
-        validSelection: isValidSelection(selectionText),
-        hasVoid: isValidSelection(selectionText),
+        validSelection: isPolygonListValid(polygonList),
+        hasVoid: hasVoid(polygonList),
       };
     }
   }
