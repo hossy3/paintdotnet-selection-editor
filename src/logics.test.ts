@@ -1,65 +1,160 @@
-import { convertToRectangleSelection, isValidSelection } from "./logics";
+import {
+  getBoundingBox,
+  hasVoid,
+  isBoxValid,
+  isPolygonListValid,
+  isRectangle,
+  PolygonList,
+  toPolygonList,
+  toSelection,
+} from "./logics";
 
-describe("isValidSelection", () => {
-  it("returns true when selection is valid", () => {
+describe("toPolygonList", () => {
+  it("returns polygonList when selection is valid", () => {
+    const polygonList = [
+      [2, 0, 0, 0, 0, 1, 2, 1, 2, 0],
+      [5, 4, 4, 4, 4, 6, 5, 6, 5, 4],
+    ];
     expect(
-      isValidSelection(
+      toPolygonList(
         '{"polygonList": ["2,0,0,0,0,1,2,1,2,0", "5,4,4,4,4,6,5,6,5,4"]}'
       )
-    ).toBeTruthy();
+    ).toStrictEqual(polygonList);
   });
 
-  it("returns false when selection text is invalid json", () => {
+  it("returns empty list when selection text is invalid json", () => {
     expect(
-      isValidSelection('{"polygonList": ["2,0,0,0,0,1,2,1,2,0",')
-    ).toBeFalsy();
+      toPolygonList('{"polygonList": ["2,0,0,0,0,1,2,1,2,0",')
+    ).toStrictEqual([]);
   });
 
-  it("returns false when polygon size is odd", () => {
+  it("returns empty list when polygon size is odd", () => {
     expect(
-      isValidSelection(
+      toPolygonList(
         '{"polygonList": ["2,0,0,0,0,1,2,1,2,0", "5,4,4,4,4,6,5,6,5"]}'
       )
-    ).toBeFalsy();
+    ).toStrictEqual([]);
   });
 
-  it("returns false when polygonList is empty", () => {
-    expect(isValidSelection('{"polygonList": []}')).toBeFalsy();
+  it("returns empty list when polygonList is empty", () => {
+    expect(toPolygonList('{"polygonList": []}')).toHaveLength(0);
   });
 });
 
-describe("convertToRectangleSelection", () => {
-  it("returns undefined when selection is not valid", () => {
-    expect(convertToRectangleSelection("invalid selection")).toBeUndefined();
+describe("toSelection", () => {
+  it("returns selection string when selection is valid", () => {
+    const polygonList = [
+      [2, 0, 0, 0, 0, 1, 2, 1, 2, 0],
+      [5, 4, 4, 4, 4, 6, 5, 6, 5, 4],
+    ];
+    const actual = toSelection(polygonList);
+    const actualObj = JSON.parse(actual);
+    const actualPolygonList = [
+      actualObj.polygonList[0].split(",").map((x: string) => parseInt(x)),
+      actualObj.polygonList[1].split(",").map((x: string) => parseInt(x)),
+    ];
+    expect(actualPolygonList).toEqual(polygonList);
   });
 
-  it("converts from 2 rectangles to 1 rectangle", () => {
-    const actual = convertToRectangleSelection(
-      '{"polygonList": ["2,0,0,0,0,1,2,1,2,0", "5,4,4,4,4,6,5,6,5,4"]}'
-    );
-    expect(actual).not.toBeUndefined();
-    const actualObj = JSON.parse(actual!);
-    const expected = { polygonList: ["5,0,0,0,0,6,5,6"] };
-    expect(actualObj).toEqual(expected);
+  it("returns empty string when selection is not valid", () => {
+    const polygonList: PolygonList = [];
+    expect(toSelection(polygonList)).toBe("");
+  });
+});
+
+describe("getBoundingBox", () => {
+  it("returns bounding box when polygonList has 2 outer loops", () => {
+    const polygonList = [
+      [2, 0, 0, 0, 0, 1, 2, 1, 2, 0],
+      [5, 4, 4, 4, 4, 6, 5, 6, 5, 4],
+    ];
+    const expected = [0, 0, 5, 6];
+    expect(getBoundingBox(polygonList)).toEqual(expected);
   });
 
-  it("converts from 1 triangle to 1 rectangle", () => {
-    const actual = convertToRectangleSelection(
-      '{"polygonList": ["10,0,5,20,15,15"]}'
-    );
-    expect(actual).not.toBeUndefined();
-    const actualObj = JSON.parse(actual!);
-    const expected = { polygonList: ["15,0,5,0,5,20,15,20"] };
-    expect(actualObj).toEqual(expected);
+  it("returns bounding box when polygonList has an outer loop and an inner loop", () => {
+    const polygonList = [
+      [11, 8, 4, 8, 4, 2, 11, 2],
+      [13, 1, 2, 1, 2, 9, 13, 9],
+    ];
+    const expected = [2, 1, 13, 9];
+    expect(getBoundingBox(polygonList)).toEqual(expected);
   });
 
-  it("returns rectangle with offset", () => {
-    const actual = convertToRectangleSelection(
-      '{"polygonList": ["10,0,0,0,0,20,10,20,10,0"]}', 1
-    );
-    expect(actual).not.toBeUndefined();
-    const actualObj = JSON.parse(actual!);
-    const expected = { polygonList: ["11,-1,-1,-1,-1,21,11,21"] };
-    expect(actualObj).toEqual(expected);
+  it("returns undefined when polygonList is invalid", () => {
+    const polygonList = [[]];
+    expect(getBoundingBox(polygonList)).toBeUndefined();
+  });
+});
+
+describe("isPolygonListValid", () => {
+  it("returns true when polygonList has 2 loops", () => {
+    const polygonList = [
+      [2, 0, 0, 0, 0, 1, 2, 1, 2, 0],
+      [5, 4, 4, 4, 4, 6, 5, 6, 5, 4],
+    ];
+    expect(isPolygonListValid(polygonList)).toBeTruthy();
+  });
+
+  it("returns true when polygonList has 1 loop", () => {
+    const polygonList = [[2, 0, 0, 0, 0, 1, 2, 1, 2, 0]];
+    expect(isPolygonListValid(polygonList)).toBeTruthy();
+  });
+
+  it("returns false when polygonList is empty", () => {
+    const polygonList: PolygonList = [];
+    expect(isPolygonListValid(polygonList)).toBeFalsy();
+  });
+});
+
+describe("hasVoid", () => {
+  it("returns true when selection has 2 loops", () => {
+    const polygonList = [
+      [2, 0, 0, 0, 0, 1, 2, 1, 2, 0], // TODO: check whether it is an outer loop or inner loop.
+      [5, 4, 4, 4, 4, 6, 5, 6, 5, 4],
+    ];
+    expect(hasVoid(polygonList)).toBeTruthy();
+  });
+
+  it("returns false when selection has 1 loop", () => {
+    const polygonList = [[2, 0, 0, 0, 0, 1, 2, 1, 2, 0]];
+    expect(hasVoid(polygonList)).toBeFalsy();
+  });
+
+  it("returns false when selection is empty", () => {
+    const polygonList: PolygonList = [];
+    expect(hasVoid(polygonList)).toBeFalsy();
+  });
+});
+
+describe("isBoxValid", () => {
+  it("returns true when box is defined", () => {
+    expect(isBoxValid([1, 2, 3, 4])).toBeTruthy();
+  });
+
+  it("returns false when box is undefined", () => {
+    expect(isBoxValid(undefined)).toBeFalsy();
+  });
+});
+
+describe("isRectangle", () => {
+  it("returns true when polygonList has a rectanglar loop", () => {
+    const polygonList = [[2, 0, 0, 0, 0, 1, 2, 1, 2, 0]];
+    expect(isRectangle(polygonList)).toBeTruthy();
+  });
+
+  it("returns false when polygonList has 2 rectanglar loops", () => {
+    const polygonList = [
+      [2, 0, 0, 0, 0, 1, 2, 1, 2, 0],
+      [5, 4, 4, 4, 4, 6, 5, 6, 5, 4],
+    ];
+    expect(isRectangle(polygonList)).toBeFalsy();
+  });
+
+  it("returns false when polygonList has a non-rectangular loop", () => {
+    const polygonList = [
+      [2, 0, 0, 0, 0, 1, 4, 1, 2, 0], // lower side is longer than upper side
+    ];
+    expect(isRectangle(polygonList)).toBeFalsy();
   });
 });
