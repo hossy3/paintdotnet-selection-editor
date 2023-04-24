@@ -18,8 +18,11 @@ import {
   ShapeUnion24Regular,
 } from "@fluentui/react-icons";
 import {
+  PolygonList,
+  fillVoid,
   hasVoid,
   isPolygonListValid,
+  isRectangle,
   makeRectangle,
   toPolygonList,
   toSelection,
@@ -38,47 +41,59 @@ const useStyles = makeStyles({
 
 type State = {
   selectionText: string;
+  polygonList: PolygonList;
   validSelection: boolean;
+  isRectangle: boolean;
   hasVoid: boolean;
 };
 
 const initialState: State = {
   selectionText: "",
+  polygonList: [],
   validSelection: false,
+  isRectangle: false,
   hasVoid: false,
 };
 
 type Action =
   | { type: "set_selection"; payload: { text: string } }
-  | { type: "convert_to_rectangle"; payload: { offset?: number } };
+  | { type: "convert_to_rectangle"; payload: { offset?: number } }
+  | { type: "fill_void"; payload: {} };
 
 const reducer = (state: State, action: Action): State => {
+  let selectionText = state.selectionText;
+  let polygonList = state.polygonList;
   switch (action.type) {
-    case "set_selection": {
-      const selectionText = action.payload.text;
-      const polygonList = toPolygonList(selectionText);
-      return {
-        selectionText: selectionText,
-        validSelection: isPolygonListValid(polygonList),
-        hasVoid: hasVoid(polygonList),
-      };
-    }
-    case "convert_to_rectangle": {
-      const polygonList = makeRectangle(
-        toPolygonList(state.selectionText),
-        action.payload.offset
-      );
-      const selectionText = toSelection(polygonList);
-      if (selectionText == null) {
+    case "set_selection":
+      selectionText = action.payload.text;
+      polygonList = toPolygonList(selectionText);
+      break;
+
+    case "convert_to_rectangle":
+      polygonList = makeRectangle(polygonList, action.payload.offset);
+      selectionText = toSelection(polygonList);
+      if (selectionText === "") {
         return state;
       }
-      return {
-        selectionText: selectionText,
-        validSelection: isPolygonListValid(polygonList),
-        hasVoid: hasVoid(polygonList),
-      };
+      break;
+
+    case "fill_void": {
+      polygonList = fillVoid(polygonList);
+      selectionText = toSelection(polygonList);
+      if (selectionText === "") {
+        return state;
+      }
     }
   }
+
+  return {
+    ...state,
+    selectionText,
+    polygonList,
+    validSelection: isPolygonListValid(polygonList),
+    isRectangle: isRectangle(polygonList),
+    hasVoid: hasVoid(polygonList),
+  };
 };
 
 const App = () => {
@@ -116,7 +131,7 @@ const App = () => {
         <Tooltip content="Rectangle" relationship="description" withArrow>
           <ToolbarButton
             aria-label="Rectangle"
-            disabled={!state.validSelection}
+            disabled={!state.validSelection || state.isRectangle}
             icon={<SelectObject24Regular />}
             onClick={() => {
               dispatch({ type: "convert_to_rectangle", payload: {} });
@@ -127,7 +142,7 @@ const App = () => {
           <ToolbarButton
             aria-label="Expand"
             icon={<ArrowExpand24Regular />}
-            disabled={!state.validSelection}
+            disabled={!state.validSelection || !state.isRectangle}
             onClick={() => {
               dispatch({
                 type: "convert_to_rectangle",
@@ -146,8 +161,14 @@ const App = () => {
         <Tooltip content="Fill void" relationship="description" withArrow>
           <ToolbarButton
             aria-label="Fill void"
-            disabled={true}
+            disabled={!state.validSelection || !state.hasVoid}
             icon={<ShapeUnion24Regular />}
+            onClick={() => {
+              dispatch({
+                type: "fill_void",
+                payload: {},
+              });
+            }}
           />
         </Tooltip>
         <ToolbarDivider />

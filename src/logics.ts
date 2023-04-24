@@ -88,7 +88,7 @@ export const isPolygonListValid = (polygonList: PolygonList): boolean =>
   polygonList.length > 0;
 
 export const hasVoid = (polygonList: PolygonList): boolean =>
-  polygonList.length > 1;
+  polygonList.length > fillVoid(polygonList).length;
 
 export const isBoxValid = (box: Box): box is NonNullable<Box> => box != null;
 
@@ -136,8 +136,8 @@ export const makeRectangle = (
   if (offset != null) {
     x_min -= offset;
     y_min -= offset;
-    x_max -= offset;
-    y_max -= offset;
+    x_max += offset;
+    y_max += offset;
   }
   return [[x_max, y_min, x_min, y_min, x_min, y_max, x_max, y_max]];
 };
@@ -154,7 +154,7 @@ export const fillVoid = (polygonList: PolygonList): PolygonList => {
     for (let i = 2; i < i_max; i++) {
       let [x0, x1, x2] = [polygon[0], polygon[(i - 1) * 2], polygon[i * 2]];
       let [y0, y1, y2] = [polygon[1], polygon[(i - 1) * 2 + 1], polygon[i * 2 + 1]];
-      area += ((x1 - x0) * (y2 - y0) + (x2 - x0) * (y1 - y1)) / 2;
+      area -= ((x1 - x0) * (y2 - y0) + (x2 - x0) * (y1 - y1)) / 2; // (0, 0): upper-left (math: lower-left)
     }
     if (area > 0) {
       result.push(polygon); // outer loop (TODO: nested outer-inner-outer case)
