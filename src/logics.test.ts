@@ -1,9 +1,11 @@
 import {
+  fillVoid,
   getBoundingBox,
   hasVoid,
   isBoxValid,
   isPolygonListValid,
   isRectangle,
+  makeRectangle,
   PolygonList,
   toPolygonList,
   toSelection,
@@ -108,15 +110,23 @@ describe("isPolygonListValid", () => {
 });
 
 describe("hasVoid", () => {
-  it("returns true when selection has 2 loops", () => {
+  it("returns true when selection has an outer loop and an inner loop", () => {
     const polygonList = [
-      [2, 0, 0, 0, 0, 1, 2, 1, 2, 0], // TODO: check whether it is an outer loop or inner loop.
-      [5, 4, 4, 4, 4, 6, 5, 6, 5, 4],
+      [11, 8, 4, 8, 4, 2, 11, 2],
+      [13, 1, 2, 1, 2, 9, 13, 9],
     ];
     expect(hasVoid(polygonList)).toBeTruthy();
   });
 
-  it("returns false when selection has 1 loop", () => {
+  it("returns false when selection has 2 outer loops", () => {
+    const polygonList = [
+      [2, 0, 0, 0, 0, 1, 2, 1, 2, 0],
+      [5, 4, 4, 4, 4, 6, 5, 6, 5, 4],
+    ];
+    expect(hasVoid(polygonList)).toBeFalsy();
+  });
+
+  it("returns false when selection has 1 outer loop", () => {
     const polygonList = [[2, 0, 0, 0, 0, 1, 2, 1, 2, 0]];
     expect(hasVoid(polygonList)).toBeFalsy();
   });
@@ -156,5 +166,42 @@ describe("isRectangle", () => {
       [2, 0, 0, 0, 0, 1, 4, 1, 2, 0], // lower side is longer than upper side
     ];
     expect(isRectangle(polygonList)).toBeFalsy();
+  });
+});
+
+describe("makeRectangle", () => {
+  it("returns bounding box from a triangle", () => {
+    const polygonList = [[5, 0, 1, 6, 8, 10, 5, 0]];
+    const expected = [[8, 0, 1, 0, 1, 10, 8, 10]];
+    expect(makeRectangle(polygonList)).toEqual(expected);
+  });
+
+  it("returns bounding box from 2 rectangles", () => {
+    const polygonList = [
+      [2, 0, 0, 0, 0, 1, 2, 1, 2, 0],
+      [5, 4, 4, 4, 4, 6, 5, 6, 5, 4],
+    ];
+    const expected = [[5, 0, 0, 0, 0, 6, 5, 6]];
+    expect(makeRectangle(polygonList)).toEqual(expected);
+  });
+
+  it("returns bounding box with offset from 2 rectangles", () => {
+    const polygonList = [
+      [2, 0, 0, 0, 0, 1, 2, 1, 2, 0],
+      [5, 4, 4, 4, 4, 6, 5, 6, 5, 4],
+    ];
+    const expected = [[6, -1, -1, -1, -1, 7, 6, 7]];
+    expect(makeRectangle(polygonList, 1)).toEqual(expected);
+  });
+});
+
+describe("fillVoid", () => {
+  it("keeps an outer loop and removes an inner loop", () => {
+    const polygonList = [
+      [11, 8, 4, 8, 4, 2, 11, 2],
+      [13, 1, 2, 1, 2, 9, 13, 9],
+    ];
+    const expected = [[13, 1, 2, 1, 2, 9, 13, 9]];
+    expect(fillVoid(polygonList)).toEqual(expected);
   });
 });
