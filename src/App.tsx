@@ -6,6 +6,7 @@ import {
   ToolbarDivider,
   Tooltip,
   makeStyles,
+  tokens,
   useId,
 } from "@fluentui/react-components";
 import {
@@ -18,8 +19,10 @@ import {
   ShapeUnion24Regular,
 } from "@fluentui/react-icons";
 import {
+  Box,
   PolygonList,
   fillVoid,
+  getBoundingBox,
   hasVoid,
   isPolygonListValid,
   isRectangle,
@@ -28,6 +31,7 @@ import {
   toSelection,
 } from "./logics";
 import { AboutDialog } from "./AboutDialog";
+import { PreviewCanvas } from "./PreviewCanvas";
 
 const useStyles = makeStyles({
   base: {
@@ -37,11 +41,15 @@ const useStyles = makeStyles({
   textarea: {
     height: "12em",
   },
+  canvasContainer: {
+    marginTop: "1em",
+  },
 });
 
 type State = {
   selectionText: string;
   polygonList: PolygonList;
+  boundingBox: Box;
   validSelection: boolean;
   isRectangle: boolean;
   hasVoid: boolean;
@@ -50,6 +58,7 @@ type State = {
 const initialState: State = {
   selectionText: "",
   polygonList: [],
+  boundingBox: undefined,
   validSelection: false,
   isRectangle: false,
   hasVoid: false,
@@ -90,6 +99,7 @@ const reducer = (state: State, action: Action): State => {
     ...state,
     selectionText,
     polygonList,
+    boundingBox: getBoundingBox(polygonList),
     validSelection: isPolygonListValid(polygonList),
     isRectangle: isRectangle(polygonList),
     hasVoid: hasVoid(polygonList),
@@ -192,6 +202,14 @@ const App = () => {
         textarea={{ className: styles.textarea }}
         value={state.selectionText}
       />
+      <div className={styles.canvasContainer}>
+        <PreviewCanvas
+          polygonList={state.polygonList}
+          boundingBox={state.boundingBox}
+          fillStyle="#0f6cbd"
+        />
+      </div>
+
       <AboutDialog
         open={dialogOpen}
         onOpenChange={(_, data) => setDialogOpen(data.open)}
