@@ -6,7 +6,6 @@ import {
   ToolbarDivider,
   Tooltip,
   makeStyles,
-  tokens,
   useId,
 } from "@fluentui/react-components";
 import {
@@ -42,7 +41,7 @@ const useStyles = makeStyles({
     height: "12em",
   },
   canvasContainer: {
-    marginTop: "1em",
+    width: "100%",
   },
 });
 
@@ -206,7 +205,8 @@ const App = () => {
         <PreviewCanvas
           polygonList={state.polygonList}
           boundingBox={state.boundingBox}
-          fillStyle="#0f6cbd"
+          fillStyle="#b4d6fa"
+          strokeStyle="#0f6cbd"
         />
       </div>
 
