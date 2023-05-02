@@ -27,10 +27,12 @@ import {
   isRectangle,
   makeRectangle,
   toPolygonList,
+  toPolygonListFromBox,
   toSelection,
 } from "./logics";
 import { AboutDialog } from "./AboutDialog";
 import { PreviewCanvas } from "./PreviewCanvas";
+import { BoxFormDialog } from "./BoxFormDialog";
 
 const useStyles = makeStyles({
   base: {
@@ -46,6 +48,8 @@ const useStyles = makeStyles({
 });
 
 type State = {
+  aboutDialogOpen: boolean;
+  boxFormDialogOpen: boolean;
   selectionText: string;
   polygonList: PolygonList;
   boundingBox: Box;
@@ -55,6 +59,8 @@ type State = {
 };
 
 const initialState: State = {
+  aboutDialogOpen: false,
+  boxFormDialogOpen: false,
   selectionText: "",
   polygonList: [],
   boundingBox: undefined,
@@ -64,17 +70,37 @@ const initialState: State = {
 };
 
 type Action =
+  | { type: "set_about_dialog_open"; payload: { open: boolean } }
+  | { type: "set_box_form_dialog_open"; payload: { open: boolean } }
   | { type: "set_selection"; payload: { text: string } }
+  | { type: "set_bounding_box_and_close_dialog"; payload: { box: Box } }
   | { type: "convert_to_rectangle"; payload: { offset?: number } }
   | { type: "fill_void"; payload: {} };
 
 const reducer = (state: State, action: Action): State => {
   let selectionText = state.selectionText;
   let polygonList = state.polygonList;
+  let boxFormDialogOpen = state.boxFormDialogOpen;
+
   switch (action.type) {
+    case "set_about_dialog_open":
+      return { ...state, aboutDialogOpen: action.payload.open };
+
+    case "set_box_form_dialog_open":
+      return { ...state, boxFormDialogOpen: action.payload.open };
+
     case "set_selection":
       selectionText = action.payload.text;
       polygonList = toPolygonList(selectionText);
+      break;
+
+    case "set_bounding_box_and_close_dialog":
+      polygonList = toPolygonListFromBox(action.payload.box);
+      selectionText = toSelection(polygonList);
+      boxFormDialogOpen = false;
+      if (selectionText === "") {
+        return { ...state, boxFormDialogOpen };
+      }
       break;
 
     case "convert_to_rectangle":
@@ -96,6 +122,7 @@ const reducer = (state: State, action: Action): State => {
 
   return {
     ...state,
+    boxFormDialogOpen,
     selectionText,
     polygonList,
     boundingBox: getBoundingBox(polygonList),
@@ -110,7 +137,6 @@ const App = () => {
   const styles = useStyles();
 
   const [state, dispatch] = React.useReducer(reducer, initialState);
-  const [dialogOpen, setDialogOpen] = React.useState(false);
 
   return (
     <div className={styles.base}>
@@ -163,8 +189,14 @@ const App = () => {
         <Tooltip content="Form" relationship="description" withArrow>
           <ToolbarButton
             aria-label="Form"
-            disabled={true}
+            disabled={!state.validSelection}
             icon={<Form24Regular />}
+            onClick={() => {
+              dispatch({
+                type: "set_box_form_dialog_open",
+                payload: { open: true },
+              });
+            }}
           />
         </Tooltip>
         <Tooltip content="Fill void" relationship="description" withArrow>
@@ -186,7 +218,10 @@ const App = () => {
             aria-label="Help"
             icon={<QuestionCircle24Regular />}
             onClick={() => {
-              setDialogOpen(true);
+              dispatch({
+                type: "set_about_dialog_open",
+                payload: { open: true },
+              });
             }}
           />
         </Tooltip>
@@ -209,10 +244,30 @@ const App = () => {
           strokeStyle="#0f6cbd"
         />
       </div>
-
+      <BoxFormDialog
+        box={state.boundingBox}
+        open={state.boxFormDialogOpen}
+        onOpenChange={(_, data) =>
+          dispatch({
+            type: "set_box_form_dialog_open",
+            payload: { open: data.open },
+          })
+        }
+        onSubmit={(box) => {
+          dispatch({
+            type: "set_bounding_box_and_close_dialog",
+            payload: { box },
+          });
+        }}
+      />
       <AboutDialog
-        open={dialogOpen}
-        onOpenChange={(_, data) => setDialogOpen(data.open)}
+        open={state.aboutDialogOpen}
+        onOpenChange={(_, data) =>
+          dispatch({
+            type: "set_about_dialog_open",
+            payload: { open: data.open },
+          })
+        }
       />
     </div>
   );
