@@ -34,6 +34,14 @@ export const toPolygonList = (selectionText: string): PolygonList => {
   }
 };
 
+export const toPolygonListFromBox = (box: Box): PolygonList => {
+  if (!isBoxValid(box)) {
+    return [];
+  }
+  const [x_min, y_min, x_max, y_max] = box;
+  return [[x_max, y_min, x_min, y_min, x_min, y_max, x_max, y_max]];
+};
+
 export const toSelection = (polygonList: PolygonList): string => {
   if (!isPolygonListValid(polygonList)) {
     return "";

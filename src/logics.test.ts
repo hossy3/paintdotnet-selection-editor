@@ -1,4 +1,5 @@
 import {
+  Box,
   fillVoid,
   getBoundingBox,
   hasVoid,
@@ -8,6 +9,7 @@ import {
   makeRectangle,
   PolygonList,
   toPolygonList,
+  toPolygonListFromBox,
   toSelection,
 } from "./logics";
 
@@ -40,6 +42,19 @@ describe("toPolygonList", () => {
 
   it("returns empty list when polygonList is empty", () => {
     expect(toPolygonList('{"polygonList": []}')).toHaveLength(0);
+  });
+});
+
+describe("toPolygonListFromBox", () => {
+  it("returns polygonList when box is valid", () => {
+    const box: Box = [1, 2, 4, 8];
+    const expected = [[4, 2, 1, 2, 1, 8, 4, 8]];
+    expect(toPolygonListFromBox(box)).toEqual(expected);
+  });
+
+  it("returns empty list when box is invalid", () => {
+    const box: Box = undefined;
+    expect(toPolygonListFromBox(box)).toEqual([]);
   });
 });
 
