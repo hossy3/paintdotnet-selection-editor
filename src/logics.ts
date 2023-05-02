@@ -87,9 +87,6 @@ export const getBoundingBox = (polygonList: PolygonList): Box => {
 export const isPolygonListValid = (polygonList: PolygonList): boolean =>
   polygonList.length > 0;
 
-export const hasVoid = (polygonList: PolygonList): boolean =>
-  polygonList.length > fillVoid(polygonList).length;
-
 export const isBoxValid = (box: Box): box is NonNullable<Box> => box != null;
 
 export const isRectangle = (polygonList: PolygonList): boolean => {
@@ -117,7 +114,7 @@ export const isRectangle = (polygonList: PolygonList): boolean => {
     const x0 = polygon[(i + 2) % polygon.length];
     const y0 = polygon[(i + 3) % polygon.length];
     if (x !== x0 && y !== y0) {
-      return false; // all lines must be vertical or horizontal 
+      return false; // all lines must be vertical or horizontal
     }
   }
 
@@ -142,24 +139,91 @@ export const makeRectangle = (
   return [[x_max, y_min, x_min, y_min, x_min, y_max, x_max, y_max]];
 };
 
-export const fillVoid = (polygonList: PolygonList): PolygonList => {
+const findInnerLoop = (polygonList: PolygonList, all = false): Set<number> => {
+  const innerLoops = new Set<number>();
+  type BoxWithIndex = [NonNullable<Box>, number];
+
   if (!isPolygonListValid(polygonList)) {
-    return [];
+    return innerLoops;
+  }
+  if (polygonList.length === 1) {
+    return innerLoops;
+  }
+  const boxes: BoxWithIndex[] = [];
+  for (let i = 0; i < polygonList.length; ++i) {
+    const box = getBoundingBox([polygonList[i]]);
+    if (isBoxValid(box)) {
+      boxes.push([box, i]);
+    }
+  }
+  const getArea = (box: NonNullable<Box>) =>
+    (box[2] - box[0]) * (box[3] - box[1]);
+  boxes.sort((a, b) => -(getArea(a[0]) - getArea(b[0]))); // large (probably outer) to small
+
+  const outerBoxes: BoxWithIndex[] = [];
+  for (const boxWithIndex of boxes) {
+    const [box, i] = boxWithIndex;
+    let inner = false;
+    for (const outerBoxWithIndex of outerBoxes) {
+      const [box0, i0] = outerBoxWithIndex;
+      if (
+        box[0] > box0[0] &&
+        box[1] > box0[1] &&
+        box[2] < box0[2] &&
+        box[3] < box0[3]
+      ) {
+        const x = polygonList[i][0]; // any point in polygonList[i]
+        const y = polygonList[i][1];
+        let upperCount = 0; // number of upper cross points
+        let lowerCount = 0; // number of lower cross points
+        const polygon = polygonList[i0];
+        for (let j = 0; j < polygon.length; j += 2) {
+          const x0 = polygon[j];
+          const y0 = polygon[j + 1];
+          const x1 = polygon[(j + 2) % polygon.length];
+          const y1 = polygon[(j + 3) % polygon.length];
+          if ((x0 <= x && x < x1) || (x1 <= x && x < x0)) {
+            const y2 = ((x - x0) * y1 + (x1 - x) * y0) / (x1 - x0);
+            if (y2 > y) {
+              upperCount += 1;
+            } else {
+              lowerCount += 1;
+            }
+          }
+        }
+        if (upperCount % 2 === 1 && lowerCount % 2 === 1) {
+          inner = true;
+          break;
+        }
+      }
+      if (inner) {
+        break;
+      }
+    }
+
+    if (inner) {
+      innerLoops.add(i);
+      if (!all) {
+        return innerLoops;
+      }
+    } else {
+      outerBoxes.push(boxWithIndex);
+    }
   }
 
+  return innerLoops;
+};
+
+export const hasVoid = (polygonList: PolygonList): boolean =>
+  findInnerLoop(polygonList).size > 0;
+
+export const fillVoid = (polygonList: PolygonList): PolygonList => {
+  const innerLoops = findInnerLoop(polygonList, true);
   const result: PolygonList = [];
-  for (const polygon of polygonList) {
-    const i_max = polygon.length / 2;
-    let area = 0;
-    for (let i = 2; i < i_max; i++) {
-      let [x0, x1, x2] = [polygon[0], polygon[(i - 1) * 2], polygon[i * 2]];
-      let [y0, y1, y2] = [polygon[1], polygon[(i - 1) * 2 + 1], polygon[i * 2 + 1]];
-      area -= ((x1 - x0) * (y2 - y0) + (x2 - x0) * (y1 - y1)) / 2; // (0, 0): upper-left (math: lower-left)
-    }
-    if (area > 0) {
-      result.push(polygon); // outer loop (TODO: nested outer-inner-outer case)
+  for (let i = 0; i < polygonList.length; ++i) {
+    if (!innerLoops.has(i)) {
+      result.push(polygonList[i]);
     }
   }
-
   return result;
 };

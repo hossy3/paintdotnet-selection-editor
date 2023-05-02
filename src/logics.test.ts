@@ -109,34 +109,6 @@ describe("isPolygonListValid", () => {
   });
 });
 
-describe("hasVoid", () => {
-  it("returns true when selection has an outer loop and an inner loop", () => {
-    const polygonList = [
-      [11, 8, 4, 8, 4, 2, 11, 2],
-      [13, 1, 2, 1, 2, 9, 13, 9],
-    ];
-    expect(hasVoid(polygonList)).toBeTruthy();
-  });
-
-  it("returns false when selection has 2 outer loops", () => {
-    const polygonList = [
-      [2, 0, 0, 0, 0, 1, 2, 1, 2, 0],
-      [5, 4, 4, 4, 4, 6, 5, 6, 5, 4],
-    ];
-    expect(hasVoid(polygonList)).toBeFalsy();
-  });
-
-  it("returns false when selection has 1 outer loop", () => {
-    const polygonList = [[2, 0, 0, 0, 0, 1, 2, 1, 2, 0]];
-    expect(hasVoid(polygonList)).toBeFalsy();
-  });
-
-  it("returns false when selection is empty", () => {
-    const polygonList: PolygonList = [];
-    expect(hasVoid(polygonList)).toBeFalsy();
-  });
-});
-
 describe("isBoxValid", () => {
   it("returns true when box is defined", () => {
     expect(isBoxValid([1, 2, 3, 4])).toBeTruthy();
@@ -195,6 +167,34 @@ describe("makeRectangle", () => {
   });
 });
 
+describe("hasVoid", () => {
+  it("returns true when selection has an outer loop and an inner loop", () => {
+    const polygonList = [
+      [11, 8, 4, 8, 4, 2, 11, 2],
+      [13, 1, 2, 1, 2, 9, 13, 9],
+    ];
+    expect(hasVoid(polygonList)).toBeTruthy();
+  });
+
+  it("returns false when selection has 2 outer loops", () => {
+    const polygonList = [
+      [2, 0, 0, 0, 0, 1, 2, 1, 2, 0],
+      [5, 4, 4, 4, 4, 6, 5, 6, 5, 4],
+    ];
+    expect(hasVoid(polygonList)).toBeFalsy();
+  });
+
+  it("returns false when selection has 1 outer loop", () => {
+    const polygonList = [[2, 0, 0, 0, 0, 1, 2, 1, 2, 0]];
+    expect(hasVoid(polygonList)).toBeFalsy();
+  });
+
+  it("returns false when selection is empty", () => {
+    const polygonList: PolygonList = [];
+    expect(hasVoid(polygonList)).toBeFalsy();
+  });
+});
+
 describe("fillVoid", () => {
   it("keeps an outer loop and removes an inner loop", () => {
     const polygonList = [
@@ -203,5 +203,23 @@ describe("fillVoid", () => {
     ];
     const expected = [[13, 1, 2, 1, 2, 9, 13, 9]];
     expect(fillVoid(polygonList)).toEqual(expected);
+  });
+
+  it("returns itself when selection has 2 outer loops", () => {
+    const polygonList = [
+      [2, 0, 0, 0, 0, 1, 2, 1, 2, 0],
+      [5, 4, 4, 4, 4, 6, 5, 6, 5, 4],
+    ];
+    expect(fillVoid(polygonList)).toEqual(polygonList);
+  });
+
+  it("returns itself when selection has 1 outer loop", () => {
+    const polygonList = [[2, 0, 0, 0, 0, 1, 2, 1, 2, 0]];
+    expect(fillVoid(polygonList)).toEqual(polygonList);
+  });
+
+  it("returns itself when selection is empty", () => {
+    const polygonList: PolygonList = [];
+    expect(fillVoid(polygonList)).toEqual(polygonList);
   });
 });
