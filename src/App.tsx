@@ -141,9 +141,9 @@ const App = () => {
   return (
     <div className={styles.base}>
       <Toolbar aria-label="Default">
-        <Tooltip content="Copy" relationship="description" withArrow>
+        <Tooltip content="コピー" relationship="description" withArrow>
           <ToolbarButton
-            aria-label="Copy"
+            aria-label="コピー"
             disabled={!state.validSelection}
             onClick={() => {
               navigator.clipboard.writeText(state.selectionText);
@@ -151,9 +151,9 @@ const App = () => {
             icon={<DocumentCopy24Regular />}
           />
         </Tooltip>
-        <Tooltip content="Paste" relationship="description" withArrow>
+        <Tooltip content="貼り付け" relationship="description" withArrow>
           <ToolbarButton
-            aria-label="Paste"
+            aria-label="貼り付け"
             onClick={() => {
               navigator.clipboard.readText().then((text) => {
                 dispatch({ type: "set_selection", payload: { text } });
@@ -163,9 +163,9 @@ const App = () => {
           />
         </Tooltip>
         <ToolbarDivider />
-        <Tooltip content="Rectangle" relationship="description" withArrow>
+        <Tooltip content="四角形にする" relationship="description" withArrow>
           <ToolbarButton
-            aria-label="Rectangle"
+            aria-label="四角形にする"
             disabled={!state.validSelection || state.isRectangle}
             icon={<SelectObject24Regular />}
             onClick={() => {
@@ -173,9 +173,9 @@ const App = () => {
             }}
           />
         </Tooltip>
-        <Tooltip content="Expand" relationship="description" withArrow>
+        <Tooltip content="拡大" relationship="description" withArrow>
           <ToolbarButton
-            aria-label="Expand"
+            aria-label="拡大"
             icon={<ArrowExpand24Regular />}
             disabled={!state.validSelection || !state.isRectangle}
             onClick={() => {
@@ -186,9 +186,9 @@ const App = () => {
             }}
           />
         </Tooltip>
-        <Tooltip content="Form" relationship="description" withArrow>
+        <Tooltip content="選択範囲を編集" relationship="description" withArrow>
           <ToolbarButton
-            aria-label="Form"
+            aria-label="選択範囲を編集"
             disabled={!state.validSelection}
             icon={<Form24Regular />}
             onClick={() => {
@@ -199,9 +199,9 @@ const App = () => {
             }}
           />
         </Tooltip>
-        <Tooltip content="Fill void" relationship="description" withArrow>
+        <Tooltip content="穴の除去" relationship="description" withArrow>
           <ToolbarButton
-            aria-label="Fill void"
+            aria-label="穴の除去"
             disabled={!state.validSelection || !state.hasVoid}
             icon={<ShapeUnion24Regular />}
             onClick={() => {
@@ -213,9 +213,9 @@ const App = () => {
           />
         </Tooltip>
         <ToolbarDivider />
-        <Tooltip content="Help" relationship="description" withArrow>
+        <Tooltip content="About" relationship="description" withArrow>
           <ToolbarButton
-            aria-label="Help"
+            aria-label="About"
             icon={<QuestionCircle24Regular />}
             onClick={() => {
               dispatch({
