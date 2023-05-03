@@ -31,7 +31,7 @@ export const PreviewCanvas = (props: PreviewCanvasProps) => {
       : `左上 (${props.boundingBox[0]}, ${props.boundingBox[1]}), サイズ (${width}, ${height})`;
 
   React.useEffect(() => {
-    if (props.polygonList.length === 0 || props.boundingBox == null) {
+    if (props.polygonList == null || props.boundingBox == null) {
       return;
     }
 

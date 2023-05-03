@@ -26,22 +26,22 @@ describe("toPolygonList", () => {
     ).toStrictEqual(polygonList);
   });
 
-  it("returns empty list when selection text is invalid json", () => {
+  it("returns undefined when selection text is invalid json", () => {
     expect(
       toPolygonList('{"polygonList": ["2,0,0,0,0,1,2,1,2,0",')
-    ).toStrictEqual([]);
+    ).toBeUndefined();
   });
 
-  it("returns empty list when polygon size is odd", () => {
+  it("returns undefined when polygon size is odd", () => {
     expect(
       toPolygonList(
         '{"polygonList": ["2,0,0,0,0,1,2,1,2,0", "5,4,4,4,4,6,5,6,5"]}'
       )
-    ).toStrictEqual([]);
+    ).toBeUndefined();
   });
 
-  it("returns empty list when polygonList is empty", () => {
-    expect(toPolygonList('{"polygonList": []}')).toHaveLength(0);
+  it("returns undefined when polygonList is empty", () => {
+    expect(toPolygonList('{"polygonList": []}')).toBeUndefined();
   });
 });
 
@@ -52,9 +52,9 @@ describe("toPolygonListFromBox", () => {
     expect(toPolygonListFromBox(box)).toEqual(expected);
   });
 
-  it("returns empty list when box is invalid", () => {
+  it("returns undefined when box is invalid", () => {
     const box: Box = undefined;
-    expect(toPolygonListFromBox(box)).toEqual([]);
+    expect(toPolygonListFromBox(box)).toEqual(undefined);
   });
 });
 
@@ -233,8 +233,8 @@ describe("fillVoid", () => {
     expect(fillVoid(polygonList)).toEqual(polygonList);
   });
 
-  it("returns itself when selection is empty", () => {
-    const polygonList: PolygonList = [];
-    expect(fillVoid(polygonList)).toEqual(polygonList);
+  it("returns undefined when selection is empty", () => {
+    const polygonList: PolygonList = undefined;
+    expect(fillVoid(polygonList)).toBeUndefined();
   });
 });
