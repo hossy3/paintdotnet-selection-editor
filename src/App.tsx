@@ -26,6 +26,7 @@ import {
   isPolygonListValid,
   isRectangle,
   makeRectangle,
+  polygonListEqual,
   toPolygonList,
   toPolygonListFromBox,
   toSelection,
@@ -56,6 +57,7 @@ type State = {
   validSelection: boolean;
   isRectangle: boolean;
   hasVoid: boolean;
+  copyTrigger: number;
 };
 
 const initialState: State = {
@@ -67,6 +69,7 @@ const initialState: State = {
   validSelection: false,
   isRectangle: false,
   hasVoid: false,
+  copyTrigger: 0,
 };
 
 type Action =
@@ -81,6 +84,7 @@ const reducer = (state: State, action: Action): State => {
   let selectionText = state.selectionText;
   let polygonList = state.polygonList;
   let boxFormDialogOpen = state.boxFormDialogOpen;
+  let copyTrigger = state.copyTrigger;
 
   switch (action.type) {
     case "set_about_dialog_open":
@@ -98,6 +102,9 @@ const reducer = (state: State, action: Action): State => {
       polygonList = toPolygonListFromBox(action.payload.box);
       selectionText = toSelection(polygonList);
       boxFormDialogOpen = false;
+      if (!polygonListEqual(polygonList, state.polygonList)) {
+        copyTrigger += 1;
+      }
       if (selectionText === "") {
         return { ...state, boxFormDialogOpen };
       }
@@ -106,6 +113,9 @@ const reducer = (state: State, action: Action): State => {
     case "convert_to_rectangle":
       polygonList = makeRectangle(polygonList, action.payload.offset);
       selectionText = toSelection(polygonList);
+      if (!polygonListEqual(polygonList, state.polygonList)) {
+        copyTrigger += 1;
+      }
       if (selectionText === "") {
         return state;
       }
@@ -114,6 +124,9 @@ const reducer = (state: State, action: Action): State => {
     case "fill_void": {
       polygonList = fillVoid(polygonList);
       selectionText = toSelection(polygonList);
+      if (!polygonListEqual(polygonList, state.polygonList)) {
+        copyTrigger += 1;
+      }
       if (selectionText === "") {
         return state;
       }
@@ -129,6 +142,7 @@ const reducer = (state: State, action: Action): State => {
     validSelection: isPolygonListValid(polygonList),
     isRectangle: isRectangle(polygonList),
     hasVoid: hasVoid(polygonList),
+    copyTrigger,
   };
 };
 
@@ -137,6 +151,12 @@ const App = () => {
   const styles = useStyles();
 
   const [state, dispatch] = React.useReducer(reducer, initialState);
+
+  React.useEffect(() => {
+    if (state.copyTrigger > 0 && state.selectionText !== "") {
+      navigator.clipboard.writeText(state.selectionText);
+    }
+  }, [state.copyTrigger]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className={styles.base}>

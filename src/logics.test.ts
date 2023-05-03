@@ -4,6 +4,7 @@ import {
   getBoundingBox,
   hasVoid,
   isBoxValid,
+  polygonListEqual,
   isPolygonListValid,
   isRectangle,
   makeRectangle,
@@ -153,6 +154,32 @@ describe("isRectangle", () => {
       [2, 0, 0, 0, 0, 1, 4, 1, 2, 0], // lower side is longer than upper side
     ];
     expect(isRectangle(polygonList)).toBeFalsy();
+  });
+});
+
+describe("polygonListEqual", () => {
+  it("returns true when 2 polygonLists are same", () => {
+    const polygonList0 = [[2, 0, 0, 0, 0, 1, 2, 1, 2, 0]];
+    const polygonList1 = [[2, 0, 0, 0, 0, 1, 2, 1, 2, 0]];
+    expect(polygonListEqual(polygonList0, polygonList1)).toBeTruthy();
+  });
+
+  it("returns false when 2 polygonLists are not same", () => {
+    const polygonList0 = [[2, 0, 0, 0, 0, 1, 2, 1, 2, 0]];
+    const polygonList1 = [[2, 0, 0, 0, 0, 1, 2, 1, 2, 1]];
+    expect(polygonListEqual(polygonList0, polygonList1)).toBeFalsy();
+  });
+
+  it("returns false when one polygonList is valid and another is invalid", () => {
+    const polygonList0 = [[2, 0, 0, 0, 0, 1, 2, 1, 2, 0]];
+    const polygonList1 = undefined;
+    expect(polygonListEqual(polygonList0, polygonList1)).toBeFalsy();
+  });
+
+  it("returns true when 2 polygonLists are invalid", () => {
+    const polygonList0 = undefined;
+    const polygonList1 = undefined;
+    expect(polygonListEqual(polygonList0, polygonList1)).toBeTruthy();
   });
 });
 

@@ -132,6 +132,33 @@ export const isRectangle = (polygonList: PolygonList): boolean => {
   return true; // TODO: edge cases
 };
 
+export const polygonListEqual = (
+  polygonList0: PolygonList,
+  polygonList1: PolygonList
+): boolean => {
+  if (polygonList0 == null && polygonList1 == null) {
+    return true;
+  } else if (polygonList0 == null || polygonList1 == null) {
+    return false;
+  }
+  if (polygonList0.length !== polygonList1.length) {
+    return false;
+  }
+  for (let i = 0; i < polygonList0.length; ++i) {
+    const polygon0 = polygonList0[i];
+    const polygon1 = polygonList1[i];
+    if (polygon0.length !== polygon1.length) {
+      return false;
+    }
+    for (let j = 0; j < polygon0.length; ++j) {
+      if (polygon0[j] !== polygon1[j]) {
+        return false;
+      }
+    }
+  }
+  return true;
+};
+
 export const makeRectangle = (
   polygonList: PolygonList,
   offset: number | undefined = undefined
