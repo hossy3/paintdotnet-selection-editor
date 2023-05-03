@@ -1,6 +1,6 @@
 const POLYGON_LIST = "polygonList";
 
-export type PolygonList = number[][]; // [[x0, y0, x1, y1, ...], ...]
+export type PolygonList = number[][] | undefined; // [[x0, y0, x1, y1, ...], ...]
 export type Box = [number, number, number, number] | undefined; // [x_min, y_min, x_max, y_max]
 
 export const toPolygonList = (selectionText: string): PolygonList => {
@@ -8,7 +8,7 @@ export const toPolygonList = (selectionText: string): PolygonList => {
     const json = JSON.parse(selectionText);
     const len = (json[POLYGON_LIST] as number[] | undefined)?.length;
     if (len == null || len === 0) {
-      return [];
+      return undefined;
     }
 
     const polygonList = [];
@@ -16,12 +16,12 @@ export const toPolygonList = (selectionText: string): PolygonList => {
       const polygon = [];
       const array = line.split(",");
       if (array.length === 0 || array.length % 2 === 1) {
-        return [];
+        return undefined;
       }
       for (let i = 0; i < array.length; ++i) {
         const x = parseInt(array[i]);
         if (Number.isNaN(x)) {
-          return [];
+          return undefined;
         }
         polygon.push(x);
       }
@@ -30,13 +30,13 @@ export const toPolygonList = (selectionText: string): PolygonList => {
 
     return polygonList;
   } catch {
-    return [];
+    return undefined;
   }
 };
 
 export const toPolygonListFromBox = (box: Box): PolygonList => {
   if (!isBoxValid(box)) {
-    return [];
+    return undefined;
   }
   const [x_min, y_min, x_max, y_max] = box;
   return [[x_max, y_min, x_min, y_min, x_min, y_max, x_max, y_max]];
@@ -92,10 +92,13 @@ export const getBoundingBox = (polygonList: PolygonList): Box => {
   return [x_min, y_min, x_max, y_max];
 };
 
-export const isPolygonListValid = (polygonList: PolygonList): boolean =>
-  polygonList.length > 0;
+export const isPolygonListValid = (
+  polygonList: PolygonList
+): polygonList is NonNullable<PolygonList> =>
+  polygonList != null && polygonList.length > 0;
 
-export const isBoxValid = (box: Box): box is NonNullable<Box> => box != null;
+export const isBoxValid = (box: Box): box is NonNullable<Box> =>
+  box != null && box.length === 4;
 
 export const isRectangle = (polygonList: PolygonList): boolean => {
   if (!isPolygonListValid(polygonList) || polygonList.length > 1) {
@@ -226,6 +229,9 @@ export const hasVoid = (polygonList: PolygonList): boolean =>
   findInnerLoop(polygonList).size > 0;
 
 export const fillVoid = (polygonList: PolygonList): PolygonList => {
+  if (!isPolygonListValid(polygonList)) {
+    return undefined;
+  }
   const innerLoops = findInnerLoop(polygonList, true);
   const result: PolygonList = [];
   for (let i = 0; i < polygonList.length; ++i) {
