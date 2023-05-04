@@ -20,13 +20,14 @@ import {
 import {
   Box,
   PolygonList,
+  boxEquals,
   fillVoid,
   getBoundingBox,
   hasVoid,
   isPolygonListValid,
   isRectangle,
   makeRectangle,
-  polygonListEqual,
+  polygonListEquals,
   toPolygonList,
   toPolygonListFromBox,
   toSelection,
@@ -84,7 +85,6 @@ const reducer = (state: State, action: Action): State => {
   let selectionText = state.selectionText;
   let polygonList = state.polygonList;
   let boxFormDialogOpen = state.boxFormDialogOpen;
-  let copyTrigger = state.copyTrigger;
 
   switch (action.type) {
     case "set_about_dialog_open":
@@ -96,41 +96,47 @@ const reducer = (state: State, action: Action): State => {
     case "set_selection":
       selectionText = action.payload.text;
       polygonList = toPolygonList(selectionText);
+      if (polygonListEquals(polygonList, state.polygonList)) {
+        return {
+          ...state,
+          selectionText,
+        };
+      }
       break;
 
     case "set_bounding_box_and_close_dialog":
       polygonList = toPolygonListFromBox(action.payload.box);
-      selectionText = toSelection(polygonList);
       boxFormDialogOpen = false;
-      if (!polygonListEqual(polygonList, state.polygonList)) {
-        copyTrigger += 1;
-      }
-      if (selectionText === "") {
-        return { ...state, boxFormDialogOpen };
-      }
       break;
 
     case "convert_to_rectangle":
       polygonList = makeRectangle(polygonList, action.payload.offset);
-      selectionText = toSelection(polygonList);
-      if (!polygonListEqual(polygonList, state.polygonList)) {
-        copyTrigger += 1;
-      }
-      if (selectionText === "") {
-        return state;
-      }
       break;
 
     case "fill_void": {
       polygonList = fillVoid(polygonList);
-      selectionText = toSelection(polygonList);
-      if (!polygonListEqual(polygonList, state.polygonList)) {
-        copyTrigger += 1;
-      }
-      if (selectionText === "") {
-        return state;
-      }
     }
+  }
+
+  let copyTrigger = state.copyTrigger;
+  if (action.type !== "set_selection") {
+    selectionText = toSelection(polygonList);
+    if (selectionText === "") {
+      return { ...state, boxFormDialogOpen };
+    }
+    if (polygonListEquals(polygonList, state.polygonList)) {
+      return {
+        ...state,
+        boxFormDialogOpen,
+        selectionText,
+      };
+    }
+    copyTrigger += 1;
+  }
+
+  let boundingBox = getBoundingBox(polygonList);
+  if (boxEquals(boundingBox, state.boundingBox)) {
+    boundingBox = state.boundingBox;
   }
 
   return {
@@ -157,6 +163,18 @@ const App = () => {
       navigator.clipboard.writeText(state.selectionText);
     }
   }, [state.copyTrigger]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const previewCanvas = React.useMemo(
+    () => (
+      <PreviewCanvas
+        polygonList={state.polygonList}
+        boundingBox={state.boundingBox}
+        fillStyle="#b4d6fa"
+        strokeStyle="#0f6cbd"
+      />
+    ),
+    [state.polygonList, state.boundingBox]
+  );
 
   return (
     <div className={styles.base}>
@@ -256,14 +274,7 @@ const App = () => {
         textarea={{ className: styles.textarea }}
         value={state.selectionText}
       />
-      <div className={styles.canvasContainer}>
-        <PreviewCanvas
-          polygonList={state.polygonList}
-          boundingBox={state.boundingBox}
-          fillStyle="#b4d6fa"
-          strokeStyle="#0f6cbd"
-        />
-      </div>
+      <div className={styles.canvasContainer}>{previewCanvas}</div>
       <BoxFormDialog
         box={state.boundingBox}
         open={state.boxFormDialogOpen}
