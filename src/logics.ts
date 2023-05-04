@@ -132,7 +132,7 @@ export const isRectangle = (polygonList: PolygonList): boolean => {
   return true; // TODO: edge cases
 };
 
-export const polygonListEqual = (
+export const polygonListEquals = (
   polygonList0: PolygonList,
   polygonList1: PolygonList
 ): boolean => {
@@ -154,6 +154,26 @@ export const polygonListEqual = (
       if (polygon0[j] !== polygon1[j]) {
         return false;
       }
+    }
+  }
+  return true;
+};
+
+export const boxEquals = (
+  box0: Box,
+  box1: Box
+): boolean => {
+  if (box0 == null && box1 == null) {
+    return true;
+  } else if (box0 == null || box1 == null) {
+    return false;
+  }
+  if (box0.length !== box1.length) {
+    return false;
+  }
+  for (let i = 0; i < box0.length; ++i) {
+    if (box0[i] !== box1[i]) {
+      return false;
     }
   }
   return true;
