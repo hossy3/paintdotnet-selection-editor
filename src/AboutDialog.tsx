@@ -34,7 +34,7 @@ export const AboutDialog = (props: AboutDialogProps) => {
           </DialogContent>
           <DialogActions>
             <DialogTrigger disableButtonEnhancement>
-              <Button appearance="primary">Close</Button>
+              <Button appearance="primary">OK</Button>
             </DialogTrigger>
           </DialogActions>
         </DialogBody>
