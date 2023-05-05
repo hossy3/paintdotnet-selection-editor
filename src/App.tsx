@@ -43,12 +43,6 @@ const App = () => {
 
   const [state, dispatch] = React.useReducer(reducer, initialState);
 
-  React.useEffect(() => {
-    if (state.copyTrigger > 0 && state.selectionText !== "") {
-      navigator.clipboard.writeText(state.selectionText);
-    }
-  }, [state.copyTrigger]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const previewCanvas = React.useMemo(
     () => (
       <PreviewCanvas
