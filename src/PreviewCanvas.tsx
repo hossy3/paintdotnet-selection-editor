@@ -39,7 +39,7 @@ export const PreviewCanvas = (props: PreviewCanvasProps) => {
     if (ctx == null) {
       return;
     }
-    ctx.clearRect(0, 0, width, height);
+    ctx.clearRect(0, 0, width + 1, height + 1);
 
     const cx = props.boundingBox[0] - 0.5;
     const cy = props.boundingBox[1] - 0.5;
