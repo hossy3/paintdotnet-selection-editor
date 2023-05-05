@@ -27,7 +27,6 @@ type State = {
   selectionTextHistoryIndex: number;
   canUndo: boolean;
   canRedo: boolean;
-  copyTrigger: number;
 };
 
 export const initialState: State = {
@@ -43,7 +42,6 @@ export const initialState: State = {
   selectionTextHistoryIndex: 0,
   canUndo: false,
   canRedo: false,
-  copyTrigger: 0,
 };
 
 type Action =
@@ -106,7 +104,6 @@ export const reducer = (state: State, action: Action): State => {
   let boxFormDialogOpen = state.boxFormDialogOpen;
   let selectionTextHistory = state.selectionTextHistory;
   let selectionTextHistoryIndex = state.selectionTextHistoryIndex;
-  let copyTrigger = state.copyTrigger;
 
   switch (action.type) {
     case "set_about_dialog_open":
@@ -175,8 +172,6 @@ export const reducer = (state: State, action: Action): State => {
       }
       selectionTextHistory = reduceSelectionTextHistory(state, selectionText);
       selectionTextHistoryIndex = selectionTextHistory.length - 1;
-
-      copyTrigger += 1;
       break;
   }
 
@@ -198,6 +193,5 @@ export const reducer = (state: State, action: Action): State => {
     selectionTextHistoryIndex,
     canUndo: canUndo(selectionTextHistoryIndex),
     canRedo: canRedo(selectionTextHistoryIndex, selectionTextHistory),
-    copyTrigger,
   };
 };
