@@ -10,6 +10,8 @@ import {
 } from "@fluentui/react-components";
 import {
   ArrowExpand24Regular,
+  ArrowRedo24Regular,
+  ArrowUndo24Regular,
   ClipboardPaste24Regular,
   DocumentCopy24Regular,
   Form24Regular,
@@ -81,6 +83,33 @@ const App = () => {
               });
             }}
             icon={<ClipboardPaste24Regular />}
+          />
+        </Tooltip>
+        <ToolbarDivider />
+        <Tooltip content="元に戻す" relationship="description" withArrow>
+          <ToolbarButton
+            aria-label="元に戻す"
+            disabled={!state.canUndo}
+            icon={<ArrowUndo24Regular />}
+            onClick={() => {
+              dispatch({
+                type: "undo",
+                payload: {},
+              });
+            }}
+          />
+        </Tooltip>
+        <Tooltip content="やり直し" relationship="description" withArrow>
+          <ToolbarButton
+            aria-label="やり直し"
+            disabled={!state.canRedo}
+            icon={<ArrowRedo24Regular />}
+            onClick={() => {
+              dispatch({
+                type: "redo",
+                payload: {},
+              });
+            }}
           />
         </Tooltip>
         <ToolbarDivider />
