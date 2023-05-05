@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.js": "/paintdotnet-selection-editor/static/js/main.d5c3f4c4.js",
+    "main.js": "/paintdotnet-selection-editor/static/js/main.a57a368d.js",
     "index.html": "/paintdotnet-selection-editor/index.html",
-    "main.d5c3f4c4.js.map": "/paintdotnet-selection-editor/static/js/main.d5c3f4c4.js.map"
+    "main.a57a368d.js.map": "/paintdotnet-selection-editor/static/js/main.a57a368d.js.map"
   },
   "entrypoints": [
-    "static/js/main.d5c3f4c4.js"
+    "static/js/main.a57a368d.js"
   ]
 }
