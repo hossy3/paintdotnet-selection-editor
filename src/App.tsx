@@ -73,7 +73,10 @@ const App = () => {
             aria-label="貼り付け"
             onClick={() => {
               navigator.clipboard.readText().then((text) => {
-                dispatch({ type: "set_selection", payload: { text } });
+                dispatch({
+                  type: "set_selection",
+                  payload: { text, snapshot: true },
+                });
               });
             }}
             icon={<ClipboardPaste24Regular />}
