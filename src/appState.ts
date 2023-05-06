@@ -33,7 +33,7 @@ export const initialState: State = {
   aboutDialogOpen: false,
   boxFormDialogOpen: false,
   selectionText: "",
-  polygonList: [],
+  polygonList: undefined,
   boundingBox: undefined,
   validSelection: false,
   isRectangle: false,
@@ -47,7 +47,7 @@ export const initialState: State = {
 type Action =
   | { type: "set_about_dialog_open"; payload: { open: boolean } }
   | { type: "set_box_form_dialog_open"; payload: { open: boolean } }
-  | { type: "set_selection"; payload: { text: string } }
+  | { type: "set_selection"; payload: { text: string, snapshot?: boolean } }
   | { type: "set_bounding_box_and_close_dialog"; payload: { box: Box } }
   | { type: "convert_to_rectangle"; payload: { offset?: number } }
   | { type: "fill_void"; payload: {} }
@@ -102,8 +102,8 @@ export const reducer = (state: State, action: Action): State => {
   let selectionText = state.selectionText;
   let polygonList = state.polygonList;
   let boxFormDialogOpen = state.boxFormDialogOpen;
-  let selectionTextHistory = state.selectionTextHistory;
   let selectionTextHistoryIndex = state.selectionTextHistoryIndex;
+  let snapshot = false;
 
   switch (action.type) {
     case "set_about_dialog_open":
@@ -115,12 +115,7 @@ export const reducer = (state: State, action: Action): State => {
     case "set_selection":
       selectionText = action.payload.text;
       polygonList = toPolygonList(selectionText);
-      if (polygonListEquals(polygonList, state.polygonList)) {
-        return {
-          ...state,
-          selectionText,
-        };
-      }
+      snapshot = !!action.payload.snapshot;
       break;
 
     case "undo":
@@ -138,13 +133,6 @@ export const reducer = (state: State, action: Action): State => {
       }
       selectionText = state.selectionTextHistory[selectionTextHistoryIndex];
       polygonList = toPolygonList(selectionText);
-      if (polygonListEquals(polygonList, state.polygonList)) {
-        return {
-          ...state,
-          selectionText,
-          selectionTextHistoryIndex,
-        };
-      }
       break;
 
     case "set_bounding_box_and_close_dialog":
@@ -163,18 +151,25 @@ export const reducer = (state: State, action: Action): State => {
       if (selectionText === "") {
         return { ...state, boxFormDialogOpen };
       }
-      if (polygonListEquals(polygonList, state.polygonList)) {
-        return {
-          ...state,
-          boxFormDialogOpen,
-          selectionText,
-        };
-      }
-      selectionTextHistory = reduceSelectionTextHistory(state, selectionText);
-      selectionTextHistoryIndex = selectionTextHistory.length - 1;
+      snapshot = true;
       break;
   }
 
+  if (polygonListEquals(polygonList, state.polygonList)) {
+    return {
+      ...state,
+      boxFormDialogOpen,
+      selectionText,
+      selectionTextHistoryIndex,
+    };
+  }
+
+  let selectionTextHistory = state.selectionTextHistory;
+  if (snapshot) {
+    selectionTextHistory = reduceSelectionTextHistory(state, selectionText);
+    selectionTextHistoryIndex = selectionTextHistory.length - 1;
+  }
+    
   let boundingBox = getBoundingBox(polygonList);
   if (boxEquals(boundingBox, state.boundingBox)) {
     boundingBox = state.boundingBox;
