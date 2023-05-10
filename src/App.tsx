@@ -58,31 +58,6 @@ const App = () => {
   return (
     <div className={styles.base}>
       <Toolbar aria-label="Default">
-        <Tooltip content="コピー" relationship="description" withArrow>
-          <ToolbarButton
-            aria-label="コピー"
-            disabled={!state.validSelection}
-            onClick={() => {
-              navigator.clipboard.writeText(state.selectionText);
-            }}
-            icon={<DocumentCopy24Regular />}
-          />
-        </Tooltip>
-        <Tooltip content="貼り付け" relationship="description" withArrow>
-          <ToolbarButton
-            aria-label="貼り付け"
-            onClick={() => {
-              navigator.clipboard.readText().then((text) => {
-                dispatch({
-                  type: "set_selection",
-                  payload: { text, snapshot: true },
-                });
-              });
-            }}
-            icon={<ClipboardPaste24Regular />}
-          />
-        </Tooltip>
-        <ToolbarDivider />
         <Tooltip content="元に戻す" relationship="description" withArrow>
           <ToolbarButton
             aria-label="元に戻す"
@@ -107,6 +82,31 @@ const App = () => {
                 payload: {},
               });
             }}
+          />
+        </Tooltip>
+        <ToolbarDivider />
+        <Tooltip content="コピー" relationship="description" withArrow>
+          <ToolbarButton
+            aria-label="コピー"
+            disabled={!state.validSelection}
+            onClick={() => {
+              navigator.clipboard.writeText(state.selectionText);
+            }}
+            icon={<DocumentCopy24Regular />}
+          />
+        </Tooltip>
+        <Tooltip content="貼り付け" relationship="description" withArrow>
+          <ToolbarButton
+            aria-label="貼り付け"
+            onClick={() => {
+              navigator.clipboard.readText().then((text) => {
+                dispatch({
+                  type: "set_selection",
+                  payload: { text, snapshot: true },
+                });
+              });
+            }}
+            icon={<ClipboardPaste24Regular />}
           />
         </Tooltip>
         <ToolbarDivider />
