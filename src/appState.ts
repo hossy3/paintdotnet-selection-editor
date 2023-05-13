@@ -47,12 +47,12 @@ export const initialState: State = {
 type Action =
   | { type: "set_about_dialog_open"; payload: { open: boolean } }
   | { type: "set_box_form_dialog_open"; payload: { open: boolean } }
-  | { type: "set_selection"; payload: { text: string, snapshot?: boolean } }
+  | { type: "set_selection"; payload: { text: string; snapshot?: boolean } }
   | { type: "set_bounding_box_and_close_dialog"; payload: { box: Box } }
   | { type: "convert_to_rectangle"; payload: { offset?: number } }
-  | { type: "fill_void"; payload: {} }
-  | { type: "undo"; payload: {} }
-  | { type: "redo"; payload: {} };
+  | { type: "fill_void"; payload: Record<string, never> }
+  | { type: "undo"; payload: Record<string, never> }
+  | { type: "redo"; payload: Record<string, never> };
 
 export const reduceSelectionTextHistory = (
   state: Pick<
@@ -169,7 +169,7 @@ export const reducer = (state: State, action: Action): State => {
     selectionTextHistory = reduceSelectionTextHistory(state, selectionText);
     selectionTextHistoryIndex = selectionTextHistory.length - 1;
   }
-    
+
   let boundingBox = getBoundingBox(polygonList);
   if (boxEquals(boundingBox, state.boundingBox)) {
     boundingBox = state.boundingBox;
