@@ -159,10 +159,7 @@ export const polygonListEquals = (
   return true;
 };
 
-export const boxEquals = (
-  box0: Box,
-  box1: Box
-): boolean => {
+export const boxEquals = (box0: Box, box1: Box): boolean => {
   if (box0 == null && box1 == null) {
     return true;
   } else if (box0 == null || box1 == null) {
