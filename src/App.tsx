@@ -6,7 +6,6 @@ import {
   ToolbarDivider,
   Tooltip,
   makeStyles,
-  useId,
 } from "@fluentui/react-components";
 import {
   ArrowExpand24Regular,
@@ -38,7 +37,6 @@ const useStyles = makeStyles({
 });
 
 const App = () => {
-  const textareaId = useId("textarea");
   const styles = useStyles();
 
   const [state, dispatch] = React.useReducer(reducer, initialState);
@@ -174,7 +172,6 @@ const App = () => {
         </Tooltip>
       </Toolbar>
       <Textarea
-        id={textareaId}
         onChange={(_, data) => {
           dispatch({ type: "set_selection", payload: { text: data.value } });
         }}
