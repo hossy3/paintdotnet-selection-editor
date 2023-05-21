@@ -134,7 +134,6 @@ const App = () => {
         <Tooltip content="選択範囲を編集" relationship="description" withArrow>
           <ToolbarButton
             aria-label="選択範囲を編集"
-            disabled={!state.validSelection}
             icon={<Form24Regular />}
             onClick={() => {
               dispatch({

@@ -11,6 +11,7 @@ import {
   DialogTrigger,
   Label,
   SpinButton,
+  SpinButtonOnChangeData,
   makeStyles,
 } from "@fluentui/react-components";
 import { Box } from "./logics";
@@ -28,86 +29,41 @@ type BoxFormDialogProps = Pick<DialogProps, "open" | "onOpenChange"> & {
   onSubmit: (box: Box) => void;
 };
 
-type State = {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-};
-
-const initialState: State = {
-  x: 0,
-  y: 0,
-  width: 1,
-  height: 1,
-};
-
-type Action =
-  | { type: "init"; payload: { box: Box } }
-  | { type: "set_x"; payload: { value: number | null | undefined } }
-  | { type: "set_y"; payload: { value: number | null | undefined } }
-  | { type: "set_width"; payload: { value: number | null | undefined } }
-  | { type: "set_height"; payload: { value: number | null | undefined } };
-
-const reducer = (state: State, action: Action): State => {
-  switch (action.type) {
-    case "init":
-      if (action.payload.box == null) {
-        return state;
-      }
-      return {
-        ...state,
-        x: Math.round(action.payload.box[0]),
-        y: Math.round(action.payload.box[1]),
-        width:
-          Math.round(action.payload.box[2]) - Math.round(action.payload.box[0]),
-        height:
-          Math.round(action.payload.box[3]) - Math.round(action.payload.box[1]),
-      };
-
-    case "set_x":
-      if (action.payload.value == null || !isFinite(action.payload.value)) {
-        return state;
-      }
-      return { ...state, x: action.payload.value };
-
-    case "set_y":
-      if (action.payload.value == null || !isFinite(action.payload.value)) {
-        return state;
-      }
-      return { ...state, y: action.payload.value };
-
-    case "set_width":
-      if (action.payload.value == null || !isFinite(action.payload.value)) {
-        return state;
-      }
-      return { ...state, width: action.payload.value };
-
-    case "set_height":
-      if (action.payload.value == null || !isFinite(action.payload.value)) {
-        return state;
-      }
-      return { ...state, height: action.payload.value };
+const onChange = (
+  data: SpinButtonOnChangeData,
+  setValue: (value: number) => void
+) => {
+  if (data.value != null) {
+    setValue(data.value);
+  } else if (data.displayValue != null) {
+    const newValue = parseFloat(data.displayValue);
+    if (!Number.isNaN(newValue)) {
+      setValue(newValue);
+    }
   }
 };
 
-export const BoxFormDialog = (props: BoxFormDialogProps) => {
-  const styles = useStyles();
-  const [state, dispatch] = React.useReducer(reducer, initialState);
+export const BoxFormDialog = (props: BoxFormDialogProps) =>
+  props.open ? <BoxFormDialogImpl {...props} /> : null;
 
-  React.useEffect(
-    () => dispatch({ type: "init", payload: { box: props.box } }),
-    [props.open, props.box]
+const BoxFormDialogImpl = (props: BoxFormDialogProps) => {
+  const styles = useStyles();
+  const [x, setX] = React.useState(
+    props.box != null ? Math.round(props.box[0]) : 0
+  );
+  const [y, setY] = React.useState(
+    props.box != null ? Math.round(props.box[1]) : 0
+  );
+  const [width, setWidth] = React.useState(
+    props.box != null ? Math.round(props.box[2] - props.box[0]) : 640
+  );
+  const [height, setHeight] = React.useState(
+    props.box != null ? Math.round(props.box[3] - props.box[1]) : 480
   );
 
   const handleSubmit = (ev: React.FormEvent) => {
     ev.preventDefault();
-    props.onSubmit([
-      state.x,
-      state.y,
-      state.x + state.width,
-      state.y + state.height,
-    ]);
+    props.onSubmit([x, y, x + width, y + height]);
   };
 
   return (
@@ -120,48 +76,28 @@ export const BoxFormDialog = (props: BoxFormDialogProps) => {
               <Label htmlFor={"x-input"}>左上座標 X</Label>
               <SpinButton
                 id={"x-input"}
-                value={state.x ?? 0}
-                onChange={(_, data) =>
-                  dispatch({
-                    type: "set_x",
-                    payload: { value: data.value ?? Number(data.displayValue) },
-                  })
-                }
+                value={x}
+                onChange={(_, data) => onChange(data, setX)}
               />
               <Label htmlFor={"y-input"}>左上座標 Y</Label>
               <SpinButton
                 id={"y-input"}
-                value={state.y ?? 0}
-                onChange={(_, data) =>
-                  dispatch({
-                    type: "set_y",
-                    payload: { value: data.value ?? Number(data.displayValue) },
-                  })
-                }
+                value={y}
+                onChange={(_, data) => onChange(data, setY)}
               />
               <Label htmlFor={"width-input"}>幅</Label>
               <SpinButton
                 id={"width-input"}
                 min={1}
-                value={state.width ?? 1}
-                onChange={(_, data) =>
-                  dispatch({
-                    type: "set_width",
-                    payload: { value: data.value ?? Number(data.displayValue) },
-                  })
-                }
+                value={width}
+                onChange={(_, data) => onChange(data, setWidth)}
               />
               <Label htmlFor={"height-input"}>高さ</Label>
               <SpinButton
                 id={"height-input"}
                 min={1}
-                value={state.height ?? 1}
-                onChange={(_, data) =>
-                  dispatch({
-                    type: "set_height",
-                    payload: { value: data.value ?? Number(data.displayValue) },
-                  })
-                }
+                value={height}
+                onChange={(_, data) => onChange(data, setHeight)}
               />
             </DialogContent>
             <DialogActions>
